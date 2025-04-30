@@ -1,0 +1,106 @@
+# 🛡️ SOC Playbook: Persistence via Cron Job
+
+**Playbook ID:** PB-PERSIST-001  
+**Analyst Level:** Tier 1  
+**Created by:** Derrick Wilson  
+**Last Updated:** April 29, 2025  
+
+---
+
+## 🧠 Objective
+
+Detect and respond to unauthorized or malicious cron jobs used to maintain persistence on a compromised Linux system. Attackers often schedule malicious scripts or reverse shells to execute at regular intervals, allowing them to regain access even after reboot or detection.
+
+---
+
+## 🚨 Trigger Conditions
+
+- New or unusual cron job detected in:
+  - `/etc/crontab`, `/etc/cron.*/`, or user crontab  
+- Scheduled job executing a reverse shell, Netcat command, or suspicious script  
+- Alerts from SIEM/EDR showing:
+  - Repetitive execution of the same script or command
+  - Cron job creation by a user who shouldn't have access
+- System instability or outbound traffic observed every X minutes/hours
+
+---
+
+## 🔍 Investigation Steps
+
+### Host-Based Verification (Linux)
+
+| Command | What It Does |
+|---------|--------------|
+| `crontab -l` | (Lists current user's scheduled cron jobs) |
+| `sudo ls -la /etc/cron*` | (Lists system-wide cron job directories) |
+| `sudo cat /etc/crontab` | (Shows default system cron table) |
+| `grep -r "/tmp" /etc/cron* 2>/dev/null` | (Looks for malicious jobs using temporary scripts) |
+| `stat [script_path]` | (Shows file metadata: created, modified, owner) |
+| `cat [script_path]` | (Views script contents to determine behavior) |
+
+---
+
+### SIEM-Based Verification
+
+- Search for log events showing:
+  - Commands like `crontab -e`, `crontab -l`, or script execution patterns
+  - Outbound traffic spikes every X minutes (reverse shell behavior)
+  - Execution of binaries or scripts in `/tmp/`, `/home/`, or unusual locations
+
+---
+
+## 🛑 Containment Steps
+
+- Identify and kill active malicious processes:
+  ```bash
+  ps aux | grep [scriptname or command]
+  sudo kill -9 [PID]
+  ```
+
+- Remove or comment out the malicious cron job:
+  ```bash
+  crontab -e   # (Remove specific lines)
+  ```
+
+- Delete any unauthorized scripts or binaries:
+  ```bash
+  sudo rm -f /tmp/revshell.sh
+  ```
+
+- Lock or disable the user account responsible:
+  ```bash
+  sudo usermod --lock [username]
+  ```
+
+- Notify Tier 2 or Incident Response
+
+---
+
+## 🧾 Documentation Checklist
+
+- Path and schedule of malicious cron job  
+- Contents of the scheduled script or command  
+- User who created it  
+- Timestamp of creation (via `stat`)  
+- Source of infection (if known)  
+- Actions taken (file removed, user locked, IR notified)  
+- Severity level and escalation decision
+
+---
+
+## ✅ Recommended Follow-Up Actions
+
+- Scan other hosts for matching cron jobs or scripts  
+- Review `.bash_history` of the user involved  
+- Harden cron permissions (limit who can write to `/etc/cron*`)  
+- Monitor for re-creation of same job over 72 hours  
+- Add rule to EDR/SIEM for high-frequency cron activity
+
+---
+
+## 🧪 Lab-Tested Notes
+
+Tested by **Derrick Wilson** using:
+- Custom cron job scheduled reverse shell (`bash -i >& /dev/tcp/...`)
+- `/etc/cron.d/` and `crontab -e` for persistence simulation
+- Confirmed detection using log review and process inspection
