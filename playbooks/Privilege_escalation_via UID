@@ -1,0 +1,105 @@
+# 🛡️ SOC Playbook: Privilege Escalation via SetUID Binary
+
+**Playbook ID:** PB-PRIVESC-001  
+**Analyst Level:** Tier 1  
+**Created by:** Derrick Wilson  
+**Last Updated:** April 29, 2025  
+
+---
+
+## 🧠 Objective
+
+Detect and respond to the creation or use of unauthorized SetUID binaries, which attackers use to gain root-level access from a normal user account.
+
+---
+
+## 🚨 Trigger Conditions
+
+- Detection of a command like:  
+  `sudo cp /bin/bash /tmp/rootbash && sudo chmod +s /tmp/rootbash`
+
+- Alert from SIEM/EDR showing:  
+  - `chmod +s` or `chown root` on a non-standard file  
+  - New binary with `SetUID` permissions created in `/tmp`, `/home`, or custom folder  
+
+- Unusual root shell spawned by non-root user  
+
+---
+
+## 🔍 Investigation Steps
+
+### Host-Based Verification (Linux)
+
+| Command | What It Does |
+|---------|--------------|
+| `find / -perm -4000 2>/dev/null` | (Lists all SetUID binaries on the system) |
+| `ls -l /tmp/rootbash` | (Shows if rootbash exists and has `-rwsr-xr-x` permissions) |
+| `stat /tmp/rootbash` | (Reveals when the file was created and by whom) |
+| `strings /tmp/rootbash | head` | (Confirms if the file is actually `/bin/bash`) |
+| `cat /home/username/.bash_history` | (View if the command was run by a user) |
+| `grep "sudo" /var/log/auth.log` | (See all sudo actions and who ran them) |
+
+---
+
+### SIEM-Based Verification
+
+- Look for the following in log alerts:
+  - Process: `chmod` with `+s`
+  - File path: `/tmp/`, `/dev/shm/`, `/home/`
+  - User: Any non-root user executing `cp` and `chmod` together
+  - Shells spawned from non-standard binaries
+
+---
+
+## 🛑 Containment Steps
+
+- Kill the backdoored binary session:
+  ```bash
+  ps aux | grep rootbash
+  sudo kill -9 [PID]
+  ```
+
+- Delete the SetUID file:
+  ```bash
+  sudo rm -f /tmp/rootbash
+  ```
+
+- Lock the user account involved:
+  ```bash
+  sudo usermod --lock [username]
+  ```
+
+- Notify Tier 2 or Incident Response team
+
+---
+
+## 🧾 Documentation Checklist
+
+- Source file path of SetUID binary  
+- Command used to create it  
+- Who executed the command  
+- Timestamps of creation and use  
+- Whether root access was obtained  
+- Containment actions taken  
+- Upload the binary for malware analysis (if unknown origin)
+
+---
+
+## ✅ Recommended Follow-Up Actions
+
+- Review other systems for similar files  
+- Audit users with `sudo` access  
+- Rotate root/admin passwords if escalation occurred  
+- Add monitoring rules for:
+  - `chmod +s`
+  - SetUID creation in `/tmp`, `/home`, `/dev/shm`
+- Review `.bash_history` for attacker behavior
+
+---
+
+## 🧪 Lab-Tested Notes
+
+Tested by **Derrick Wilson** using simulated privilege escalation with:
+- Kali Linux
+- Bash copy and SetUID injection
+- Manual log review and file system forensics
