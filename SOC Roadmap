@@ -1,0 +1,70 @@
+WEEK 1 – 🔐 SOC Fundamentals + Linux Login Forensics
+
+Focus	Description
+🧠 Theory	What does a SOC actually do? Who’s in Tier 1 vs Tier 2? What’s SIEM?
+🔧 Commands	journalctl, grep, last, who, w, tail, less, awk
+💥 Drill	Simulate SSH brute force → successful login as dsmith → investigate
+📝 Write	Markdown Playbook: SSH Brute Force Investigation
+🧠 Learn	MITRE Technique T1110: Brute Force
+WEEK 2 – 🧱 Networking for Detection
+
+Focus	Description
+🧠 Theory	OSI model, DNS, TCP/UDP — not just what they are, but why attackers care
+🔧 Commands	ss -tunap, netstat, tcpdump, dig, nslookup, traceroute
+💥 Drill	Set up Netcat listener + reverse shell, investigate with ss, lsof
+📝 Write	Playbook: Detecting a Reverse Shell
+🧠 Learn	MITRE Technique T1059.004: Reverse Shell via Bash
+WEEK 3 – 🧮 Linux File & Persistence Forensics
+
+Focus	Description
+🧠 Theory	File timestamps, SetUID, persistence via .bashrc, cron jobs
+🔧 Commands	find, stat, ls -l, sha256sum, crontab, cat ~/.bashrc
+💥 Drill	Add hidden cron job → simulate malware drop in /tmp → investigate
+📝 Write	Playbook: Cron Job + Suspicious File Drop
+🧠 Learn	MITRE Techniques T1053.003 (Cron), T1547.001 (rc scripts)
+WEEK 4 – 🧑🏽‍💻 Privilege Escalation Detection
+
+Focus	Description
+🧠 Theory	What’s a SetUID binary? How does sudo abuse work?
+🔧 Commands	find / -perm -4000, sudo -l, id, groups, chmod, lsattr
+💥 Drill	Create SetUID backdoor binary, simulate sudo abuse path
+📝 Write	Playbook: Detecting SetUID Exploits
+🧠 Learn	MITRE T1548: Abuse Elevation Control Mechanisms
+WEEK 5 – 🛠️ Intro to SIEM Thinking & Detection Logic
+
+Focus	Description
+🧠 Theory	How do SIEMs actually work? What’s a correlation rule? What makes a good alert?
+🔧 Tools	JSON logs, Splunk or ELK (or even jq for local parsing)
+💥 Drill	Write detection logic: 5+ SSH failures in 3 minutes → alert
+📝 Write	Markdown Logic: Brute Force Threshold Rule (include false positive handling)
+🧠 Learn	MITRE TTPs: Match detection logic to ATT&CK mapping
+WEEK 6 – 🧠 Memory + Process Analysis
+
+Focus	Description
+🧠 Theory	How attackers live off the land (LOLbins), run in memory, hide processes
+🔧 Commands	ps aux, lsof, top, strings, grep /proc/*/cmdline
+💥 Drill	Drop a custom backdoor (Netcat or shell script), observe live memory behavior
+📝 Write	Playbook: Rogue Process Investigation
+🧠 Learn	T1055 (Process Injection), T1106 (Command & Scripting Interpreter)
+WEEK 7 – 🧑🏽‍💻 Threat Intel + IOC Correlation
+
+Focus	Description
+🧠 Theory	What are IOCs? What makes a good one? How do we use threat feeds in the SOC?
+🔧 Tools	AbuseIPDB, VirusTotal, urlscan.io, OpenCTI
+💥 Drill	Simulate a malicious domain connection (e.g. wget from Kali), investigate in logs
+📝 Write	Playbook: IOC Enrichment from Alert
+🧠 Learn	T1589, T1590 (Reconnaissance + IOC Creation)
+WEEK 8 – 🧪 Full Attack Sim + Analyst Workflow
+
+Focus	Description
+🎯 Scenario 1	Brute force → gain access → run recon → drop Netcat → cron persistence
+🎯 Scenario 2	Insider privilege escalation → sudo abuse → backdoor binary
+🛠️ Drill	Investigate full attack timeline, generate Markdown reports like real alerts
+🧠 Deliverables	Timeline, impact summary, attacker TTPs, recommendations
+📦 Bonus	Publish all playbooks + reports to GitHub as a public Tier 1 SOC Portfolio
+✅ Tools to Master Along the Way
+
+Command-Line: journalctl, grep, ss, find, stat, ps, crontab, netcat, bash
+Intel: AbuseIPDB, VirusTotal, urlscan.io
+Docs: GitHub for playbooks, logs, and reports
+Optionally: TryHackMe’s SOC Level 1 room for guided scenarios
